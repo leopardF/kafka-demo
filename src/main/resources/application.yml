@@ -1,0 +1,99 @@
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 1
+    leaseExpirationDurationInSeconds: 2
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+ribbon:
+  ReadTimeout: 6000
+  ConnectTimeout: 6000
+  eureka:
+    enabled: true
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+
+
+server:
+  port: 8911
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: kafka
+    #MYSQL数据库配置
+  redis:
+    database: 0
+    timeout: 1000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: 10000
+        max-idle: 10
+        min-idle: 0
+    host: localhost  # Redis服务器地址
+    port: 6379       # Redis服务器连接端口
+  datasource:
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/disease_prevention?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: admin123
+    druid:
+      #初始化连接大小
+      initial-size: 8
+      #最小空闲连接数
+      min-idle: 5
+      #最大连接数
+      max-active: 20
+      #查询超时时间
+      query-timeout: 6000
+      #事务查询超时时间
+      transaction-query-timeout: 6000
+      #关闭空闲连接超时时间
+      remove-abandoned-timeout: 1800
+      filters: stat,config
+  kafka:
+    declare-topic: CDC_DECLARE_MSG
+    listener:
+      missing-topics-fatal: false
+    properties:
+      reconnect:
+        backoff:
+          ms: 3000 #设置客户端内部重试间隔
+      max:
+        block:
+          ms: 30000 #请求的最长等待时间
+        poll:
+          interval:
+            ms: 30000  #指定consumer两次poll的最大时间间隔（默认5分钟）
+      security:
+        protocol: PLAINTEXT #接入协议 需密码使用 SASL_PLAINTEXT，并启用kafka.properties.sasl.jaas.config
+      sasl:
+        mechanism: PLAIN
+#        jaas:
+#          config: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="ckafka-6q8gargn#cdc-user" password="12345678a";'
+    consumer:
+      bootstrap-servers: 127.0.0.1:9092  #指定kafka服务器地址
+      session-timeout-ms: 30000 #在使用Kafka的组管理时，用于检测消费者故障的超时
+      max-poll-records: 30 #每次Poll的最大数量
+      #键&值序列化
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      group-id: test-consumer-group #指定消息组
+      enable-auto-commit: true  #指定消息被消费之后自动提交偏移量，以便下次继续消费
+      auto-commit-interval-ms: 1000 #如何设置为自动提交（enable.auto.commit=true），这里设置自动提交周期
+      auto-offset-reset: latest  #指定从最近地方开始消费(earliest)
+    producer:
+      bootstrap-servers: 127.0.0.1:9092  #指定kafka服务器地址
+      #键&值序列化
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 5 #设置客户端内部重试次数
+
+#mybatis
+mybatis:
+  # spring boot集成mybatis的方式打印sql
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
